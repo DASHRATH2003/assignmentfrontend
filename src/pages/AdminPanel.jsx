@@ -12,7 +12,7 @@ const AdminPanel = () => {
   const [editMode, setEditMode] = useState(false)
   const [currentImageId, setCurrentImageId] = useState(null)
   const [message, setMessage] = useState({ text: '', type: '' })
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   
   const navigate = useNavigate()
 
@@ -25,6 +25,24 @@ const AdminPanel = () => {
     }
 
     fetchImages()
+    
+    // Set sidebar open by default on desktop
+    if (window.innerWidth >= 1024) {
+      setSidebarOpen(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(true)
+      } else {
+        setSidebarOpen(false)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
   const fetchImages = async () => {
@@ -163,8 +181,16 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+      
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-56' : 'w-14'} bg-white/90 backdrop-blur-lg shadow-2xl border-r border-white/30 transition-all duration-300 flex flex-col h-screen overflow-hidden`}>
+      <div className={`${sidebarOpen ? 'w-56' : 'w-14'} ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} fixed lg:relative z-50 lg:z-auto bg-white/90 backdrop-blur-lg shadow-2xl border-r border-white/30 transition-all duration-300 flex flex-col h-screen overflow-hidden`}>
         {/* Sidebar Header */}
         <div className="p-3 border-b border-gray-200/50">
           <div className="flex items-center justify-between">
@@ -180,14 +206,28 @@ const AdminPanel = () => {
                  </h1>
               )}
             </div>
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? "M11 19l-7-7 7-7m8 14l-7-7 7-7" : "M13 5l7 7-7 7M5 5l7 7-7 7"} />
-              </svg>
-            </button>
+            <div className="flex items-center space-x-2">
+              {/* Mobile Close Button */}
+              {sidebarOpen && (
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+              {/* Desktop Toggle Button */}
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="hidden lg:block p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              >
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? "M11 19l-7-7 7-7m8 14l-7-7 7-7" : "M13 5l7 7-7 7M5 5l7 7-7 7"} />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -266,12 +306,21 @@ const AdminPanel = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-screen">
+      <div className="flex-1 flex flex-col h-screen lg:ml-0">
         {/* Top Navigation */}
         <nav className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20 flex-shrink-0">
           <div className="px-6 py-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-4">
+                {/* Mobile Menu Button */}
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
                 <h2 className="text-xl font-bold text-gray-800">Dashboard</h2>
                 <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
                   <span>Total Images:</span>
@@ -292,8 +341,8 @@ const AdminPanel = () => {
           </div>
         </nav>
 
-        {/* Main Content Area */}
-        <div className="flex-1 p-6 overflow-y-auto">
+        {/* Main Content */}
+        <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
         {message.text && (
           <div className={`mb-6 p-4 rounded-xl flex items-center shadow-lg backdrop-blur-sm ${
             message.type === 'success'
@@ -315,15 +364,15 @@ const AdminPanel = () => {
           </div>
         )}
 
-        <div className="bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl border border-white/20 mb-8">
-          <div className="px-6 py-8 sm:p-8">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl border border-white/20 mb-4 sm:mb-8">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <div className="flex items-center space-x-3 mb-4 sm:mb-6">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{editMode ? 'Edit Image' : 'Upload New Image'}</h2>
+              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{editMode ? 'Edit Image' : 'Upload New Image'}</h2>
             </div>
             
             <form onSubmit={editMode ? handleUpdate : handleUpload} className="space-y-6">
@@ -367,10 +416,10 @@ const AdminPanel = () => {
                 </div>
               )}
               
-              <div className="flex space-x-4">
+              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                 <button
                   type="submit"
-                  className={`flex-1 inline-flex justify-center items-center py-3 px-6 border border-transparent shadow-lg text-sm font-semibold rounded-xl text-white ${editMode ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all duration-300 hover:scale-105`}
+                  className={`flex-1 inline-flex justify-center items-center py-3 px-4 sm:px-6 border border-transparent shadow-lg text-sm font-semibold rounded-xl text-white ${editMode ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all duration-300 hover:scale-105`}
                   disabled={uploading}
                 >
                   {uploading ? (
@@ -413,14 +462,14 @@ const AdminPanel = () => {
         </div>
 
         <div className="bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl border border-white/20">
-          <div className="px-6 py-8 sm:p-8">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-teal-600 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <div className="flex items-center space-x-3 mb-4 sm:mb-6">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-600 to-teal-600 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">Manage Images</h2>
+              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">Manage Images</h2>
             </div>
             
             {loading ? (
@@ -437,47 +486,49 @@ const AdminPanel = () => {
                 <p className="text-gray-500">Upload your first image to get started!</p>
               </div>
             ) : (
-              <div className="overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full">
-                    <thead>
-                      <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Image</th>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Title</th>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {images.map((image, index) => (
-                        <tr key={image._id} className="hover:bg-gray-50/50 transition-colors duration-200">
-                          <td className="px-6 py-4">
-                            <div className="relative group">
-                              <img 
-                                src={image.url} 
-                                alt={image.title} 
-                                className="h-20 w-20 object-cover rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 border-2 border-white"
-                              />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-xl transition-all duration-300"></div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-semibold text-gray-900">{image.title}</div>
-                            <div className="text-xs text-gray-500 mt-1">Image #{index + 1}</div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex space-x-3">
-                              <button
-                                onClick={() => handleEdit(image)}
-                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 hover:scale-105"
-                              >
-                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDelete(image._id)}
-                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-lg text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-300 hover:scale-105"
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                          <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Image</th>
+                          <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Title</th>
+                          <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {images.map((image, index) => (
+                          <tr key={image._id} className="hover:bg-gray-50/50 transition-colors duration-200">
+                            <td className="px-6 py-4">
+                              <div className="relative group">
+                                <img 
+                                  src={image.url} 
+                                  alt={image.title} 
+                                  className="h-20 w-20 object-cover rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 border-2 border-white"
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-xl transition-all duration-300"></div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm font-semibold text-gray-900">{image.title}</div>
+                              <div className="text-xs text-gray-500 mt-1">Image #{index + 1}</div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex space-x-3">
+                                <button
+                                  onClick={() => handleEdit(image)}
+                                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 hover:scale-105"
+                                >
+                                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(image._id)}
+                                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-lg text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-300 hover:scale-105"
                               >
                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -488,10 +539,52 @@ const AdminPanel = () => {
                           </td>
                         </tr>
                       ))}
-                    </tbody>
-                  </table>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-4">
+                  {images.map((image, index) => (
+                    <div key={image._id} className="bg-white/60 backdrop-blur-sm rounded-xl border border-white/30 p-4 shadow-lg">
+                      <div className="flex items-start space-x-4">
+                        <div className="relative group flex-shrink-0">
+                          <img 
+                            src={image.url} 
+                            alt={image.title} 
+                            className="h-16 w-16 object-cover rounded-lg shadow-md group-hover:shadow-lg transition-all duration-300 border border-white"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold text-gray-900 truncate">{image.title}</div>
+                          <div className="text-xs text-gray-500 mt-1">Image #{index + 1}</div>
+                          <div className="flex flex-col space-y-2 mt-3">
+                            <button
+                              onClick={() => handleEdit(image)}
+                              className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs font-semibold rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300"
+                            >
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(image._id)}
+                              className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs font-semibold rounded-lg text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-300"
+                            >
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>

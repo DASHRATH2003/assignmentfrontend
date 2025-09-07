@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import { API_BASE_URL } from '../config/api'
 
 const Home = () => {
   const [images, setImages] = useState([])
@@ -9,7 +10,7 @@ const Home = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/images')
+        const response = await axios.get(`${API_BASE_URL}/api/images`)
         setImages(response.data)
         setLoading(false)
       } catch (error) {

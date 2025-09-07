@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { API_BASE_URL } from '../config/api'
 
 const AdminPanel = () => {
   const [images, setImages] = useState([])
@@ -28,7 +29,7 @@ const AdminPanel = () => {
 
   const fetchImages = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/images')
+      const response = await axios.get(`${API_BASE_URL}/api/images`)
       setImages(response.data)
       setLoading(false)
     } catch (error) {
@@ -66,7 +67,7 @@ const AdminPanel = () => {
       formData.append('title', title)
       
       const token = localStorage.getItem('adminToken')
-      const response = await axios.post('http://localhost:5000/api/images/upload', formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/images/upload`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -106,7 +107,7 @@ const AdminPanel = () => {
 
     try {
       const token = localStorage.getItem('adminToken')
-      await axios.put(`http://localhost:5000/api/images/${currentImageId}`, { title }, {
+      await axios.put(`${API_BASE_URL}/api/images/${currentImageId}`, { title }, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -137,7 +138,7 @@ const AdminPanel = () => {
     
     try {
       const token = localStorage.getItem('adminToken')
-      await axios.delete(`http://localhost:5000/api/images/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/images/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

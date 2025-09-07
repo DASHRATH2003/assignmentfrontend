@@ -158,7 +158,7 @@ const AdminPanel = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken')
-    navigate('/admin')
+    navigate('/')
   }
 
   return (

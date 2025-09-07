@@ -71,9 +71,7 @@ const AdminLogin = () => {
           <h2 className="text-center text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent mb-2">
             Admin Portal
           </h2>
-          <p className="text-center text-lg text-gray-600 mb-2">
-            Secure administrative access
-          </p>
+         
           <p className="text-center text-sm text-gray-500">
             Or{' '}
             <Link to="/" className="font-medium text-red-600 hover:text-orange-600 transition-colors duration-300">
